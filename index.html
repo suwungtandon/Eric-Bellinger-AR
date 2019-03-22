@@ -10,7 +10,10 @@
 	<script src='aframe-ar.js'></script>
 	<!-- Incorporating these modifications to reduce jitter: https://github.com/jeromeetienne/AR.js/pull/422/commits/7e247677f563e7858388b00eb46c226c92874bb5 -->
 	<script>
-		var constraints = { audio: false, video: true };
+		var constraints = {
+			audio: false,
+			video: true
+		};
 
 		navigator.mediaDevices.getUserMedia(constraints).then(function(mediaStream) {
 			console.log("camera access granted");
@@ -41,7 +44,11 @@
 				marker.addEventListener('markerLost', function() {
 					let tempPosition = marker.getAttribute('position');
 					let tempRotation = marker.getAttribute('rotation');
-					tempVid.setAttribute('position', {x: tempPosition.x - 1, y: tempPosition.y + 5, z: tempPosition.z});
+					tempVid.setAttribute('position', {
+						x: tempPosition.x - 1,
+						y: tempPosition.y + 5,
+						z: tempPosition.z
+					});
 					//tempVid.setAttribute('rotation', {x: tempRotation.x - 90, y: tempRotation.y, z: tempRotation.z});
 					tempVid.setAttribute('visible', true);
 				});
@@ -57,7 +64,7 @@
 
 <body style='margin : 0px; overflow: hidden;'>
 	<a-scene embedded arjs='debugUIEnabled: false; patternRatio: 0.97; detectionMode: mono;' keyboard-shortcuts='enterVR: false' vr-mode-ui='enabled: false'>
-		<a-assets timeout="20000">
+		<a-assets timeout="30000">
 			<img id="frame" src="frame.png">
 			<video id="eb-vid" autoplay loop="true" src="eb-vid.mp4" webkit-playsinline playsinline></video>
 		</a-assets>
@@ -69,7 +76,7 @@
 			<a-plane id="arFrame" position='0 -0.9 0' rotation='0 0 0' width='1' height='1' material='side:double; src: #frame'></a-plane>
 		</a-plane>
 
-		<a-marker id='marker' registerevents emitevents='true' type='pattern' url='eb-test-inner.patt' minconfidence='0.5'>
+		<a-marker id='marker' registerevents emitevents='true' type='pattern' url='eb-patt-new.patt' minconfidence='0.5'>
 			<a-video id='arVid' src='#eb-vid' width="15" height="14" position="-1 0 -5" rotation='-90 0 0'></a-video>
 		</a-marker>
 

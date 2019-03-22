@@ -66,7 +66,7 @@
 	<a-scene embedded arjs='debugUIEnabled: false; patternRatio: 0.93; detectionMode: color;' keyboard-shortcuts='enterVR: false' vr-mode-ui='enabled: false'>
 		<a-assets timeout="30000">
 			<img id="frame" src="frame.png">
-			<video id="eb-vid" autoplay loop="true" src="eb-vid.mp4" webkit-playsinline playsinline muted></video>
+			<video id="eb-vid" autoplay loop playsinline muted src="eb-vid.mp4" crossorigin="anonymous" />
 		</a-assets>
 
 		<a-plane width="3.5" height="0.5" position="-0.05 -1.5 -8" color="black">

@@ -5,87 +5,83 @@
 
 <head>
 	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 
-	<script src='https://aframe.io/releases/0.8.2/aframe.min.js'></script>
-	<script src='aframe-ar.js'></script>
-	<!-- Incorporating these modifications to reduce jitter: https://github.com/jeromeetienne/AR.js/pull/422/commits/7e247677f563e7858388b00eb46c226c92874bb5 -->
+	<script src="https://aframe.io/releases/0.8.2/aframe.min.js"></script>
+
+	<!-- Incorporates a customization of these modifications to reduce jitter: https://github.com/jeromeetienne/AR.js/pull/422/commits/7e247677f563e7858388b00eb46c226c92874bb5 -->
+	<script src="aframe-ar.js"></script>
 	<script>
+		// Is explicitly asking for camera access necessary for some devices/browsers?
 		var constraints = {
 			audio: false,
 			video: true
 		};
 
+		// When the app starts (user allows camera), hide the switch the text instructions:
 		navigator.mediaDevices.getUserMedia(constraints).then(function(mediaStream) {
-			console.log("camera access granted");
-			document.querySelector('#camAccess').setAttribute('visible', false);
 			document.querySelector('#tutorial').setAttribute('visible', true);
 		});
 
-		var ended = false;
-
+		// A compenent to live on the <a-scene> element, listening for 'markerFound' and 'makerLost' events.
 		AFRAME.registerComponent('registerevents', {
 			init: function() {
-				var marker = this.el;
-				var plane = marker.firstElementChild;
 				var marker = document.querySelector('#marker');
-				var tempVid = document.querySelector('#tempVid');
+				var foundVid = document.querySelector('#foundVid');
+				var lostVid = document.querySelector('#lostVid');
+				var startedPlaying = false;
 
-				marker.addEventListener('markerFound', function() {
-					if (!ended) {
-						ended = true;
+				// When the scene sees a marker, swap and move elements:
+				this.el.addEventListener('markerFound', function() {
+					lostVid.setAttribute('visible', false); // Hide the placeholder video when the marker is recognized
+
+					// Run the first time the marker is found:
+					if (!startedPlaying) {
+						startedPlaying = true;
+						document.querySelector('#textBacking').setAttribute('visible', false); // Hide the text
+						document.querySelector('video').play();
+						// Hide the marker guide after 2.5 seconds:
 						window.setTimeout(function() {
-							loadLink();
-						}, 8000);
+							document.querySelector('#guideFrame').setAttribute('visible', false);
+						}, 2500);
+						// Navigate to Eric's webpage after 11 seconds (end of video + 1 second rest):
+						window.setTimeout(function() {
+							window.location = 'http://ericbellinger.com/';
+						}, 11000);
 					}
-					tempVid.setAttribute('visible', false);
-					document.querySelector('a-plane').setAttribute('visible', false);
 				});
 
-				marker.addEventListener('markerLost', function() {
-					let tempPosition = marker.getAttribute('position');
-					let tempRotation = marker.getAttribute('rotation');
-					tempVid.setAttribute('position', {
-						x: tempPosition.x - 1,
-						y: tempPosition.y + 5,
-						z: tempPosition.z
-					});
-					//tempVid.setAttribute('rotation', {x: tempRotation.x - 90, y: tempRotation.y, z: tempRotation.z});
-					tempVid.setAttribute('visible', true);
+				// When the scene loses a marker, sub in the placeholder video:
+				this.el.addEventListener('markerLost', function() {
+					foundVid.object3D.getWorldPosition(lostVid.object3D.position); // Copy foundVid's last position to lostVid
+					marker.object3D.getWorldQuaternion(lostVid.object3D.quaternion); // Copy marker's last rotation to lostVid
+					lostVid.object3D.rotateX(THREE.Math.degToRad(-90)); // Rotate lostVid to face screen
+					lostVid.setAttribute('visible', true);
 				});
 			}
 		});
-
-		function loadLink() {
-			// show link			//window.location = 'http://ericbellinger.com/';
-			document.querySelector('a-plane').setAttribute('visible', false);
-		}
 	</script>
 </head>
 
-<body style='margin : 0px; overflow: hidden;'>
-	<a-scene embedded arjs='debugUIEnabled: false; patternRatio: 0.93; detectionMode: color;' keyboard-shortcuts='enterVR: false' vr-mode-ui='enabled: false'>
-		<a-assets timeout="30000">
-			<img id="frame" src="frame.png">
-			<video id="eb-vid" autoplay loop playsinline muted src="eb-vid.mp4" crossorigin="anonymous" />
+<body style="margin : 0px; overflow: hidden;">
+	<a-scene registerevents embedded arjs="sourceType: webcam; canvasWidth: 1280; canvasHeight: 920; debugUIEnabled: false; patternRatio: 0.93; detectionMode: color;" keyboard-shortcuts="enterVR: false" vr-mode-ui="enabled: false">
+		<a-assets>
+			<img id="frame" src="frame.png" crossorigin="anonymous" />
+			<video id="eb-vid" src="eb-vid.mp4" type="video/mp4" width="1080px" height="1080px" autoplay playsinline muted crossorigin="anonymous"></video>
 		</a-assets>
 
-		<a-plane width="3.5" height="0.5" position="-0.05 -1.5 -8" color="black">
-			<a-text id="camAccess" value="Please allow camera access for AR" align="center"></a-text>
-			<a-text id="tutorial" value="SCAN AR MARKER" position="0 0.2 1" align="center" color="#1ec2ee" visible="false"></a-text>
-			<a-text id="link" value="SCAN AR MARKER" position="0 0.2 1" align="center" color="#1ec2ee" visible="false"></a-text>
-			<a-plane id="arFrame" position='0 -0.9 0' rotation='0 0 0' width='1' height='1' material='side:double; src: #frame'></a-plane>
+		<a-plane id="textBacking" width="3.5" height="0.5" position="-0.05 -2.4 -8" color="black">
+			<a-text id="tutorial" value="SCAN AR MARKER" position="0 0.3 1" align="center" color="#ff1c9c" visible="false"></a-text>
 		</a-plane>
 
-		<a-marker id='marker' registerevents emitevents='true' type='pattern' url='eb-patt-new.patt' minconfidence='0.5'>
-			<a-video id='arVid' src='#eb-vid' width="15" height="14" position="-1 0 -5" rotation='-90 0 0'></a-video>
+		<a-image id="guideFrame" position="-0.05 -1.5 -8" rotation="0 0 0" width="0.8" height="0.8" material="side:double; src: #frame"></a-image>
+
+		<a-marker id="marker" type="pattern" url="eb-patt.patt" size="0.1" emitevents="true" minconfidence="0.4">
+			<a-video id="foundVid" src="#eb-vid" width="14" height="13" position="-0.5 0 -4.5" rotation="-90 0 0"></a-video>
 		</a-marker>
 
-		<a-video id='tempVid' src='#eb-vid' width="15" height="14"></a-video>
+		<a-video id="lostVid" src="#eb-vid" width="14" height="13"></a-video>
 
-		<a-entity camera></a-entity>
+		<a-entity camera="fov: 100"></a-entity>
 	</a-scene>
-
-	<!-- <script>
-		document.querySelector('#marker').setAttribute('visible', false);
-	</script> -->
 </body>

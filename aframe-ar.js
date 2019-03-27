@@ -4778,9 +4778,9 @@ ARjs.MarkerControls = THREEx.ArMarkerControls = function(context, object3d, para
 	this.object3d.visible = false;
 
 	this.debounceMatrices = []; // last DEBOUNCE_COUNT modelViewMatrix
-	this.DEBOUNCE_COUNT = 8; // average over this many
-	this.AVERAGE_MATRIX_TOLERANCE = .0025; // max allowable distance from current matrix entry to average
-	this.AVERAGE_MATRIX_THRESHOLD = 7;
+	this.DEBOUNCE_COUNT = 12; // average over this many
+	this.AVERAGE_MATRIX_TOLERANCE = .002; // max allowable distance from current matrix entry to average
+	this.AVERAGE_MATRIX_THRESHOLD = 8; // Move if this many entries are above the tolerance
 
 	//////////////////////////////////////////////////////////////////////////////
 	//		setParameters

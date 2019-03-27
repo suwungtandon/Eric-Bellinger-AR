@@ -48,8 +48,11 @@
 					if (!startedPlaying) {
 						startedPlaying = true;
 						document.querySelector('#textBacking').setAttribute('visible', false); // Hide the text
-						document.querySelector('video').play();
-						document.querySelector('#foundAudio').components.sound.playSound();
+						// Wait a half second before playing the video and audio
+						window.setTimeout(function() {
+							document.querySelector('video').play();
+							document.querySelector('#foundAudio').components.sound.playSound();
+						}, 1000);
 						// Hide the marker guide after 2 seconds:
 						window.setTimeout(function() {
 							document.querySelector('#guideFrame').setAttribute('visible', false);
@@ -73,8 +76,8 @@
 	</script>
 </head>
 
-<body style="margin : 0px; overflow: hidden;">
-	<a-scene registerevents embedded arjs="sourceType: webcam; canvasWidth: 1280; canvasHeight: 960; debugUIEnabled: false; patternRatio: 0.93; detectionMode: color;" keyboard-shortcuts="enterVR: false" vr-mode-ui="enabled: false">
+<body style="margin: 0px; overflow: hidden;">
+	<a-scene registerevents embedded arjs="sourceType: webcam; canvasWidth: 1280; canvasHeight: 960; patternRatio: 0.93; detectionMode: color; debugUIEnabled: false;" keyboard-shortcuts="enterVR: false" vr-mode-ui="enabled: false">
 		<a-assets>
 			<img id="frame" src="frame.png" crossorigin="anonymous" />
 			<video id="eb-vid" src="eb-vid.mp4" type="video/mp4" width="1080px" height="1080px" autoplay playsinline muted crossorigin="anonymous"></video>
@@ -87,7 +90,7 @@
 
 		<a-image id="guideFrame" position="-0.05 -1.5 -8" rotation="0 0 0" width="0.8" height="0.8" material="side:double; src: #frame"></a-image>
 
-		<a-marker id="marker" type="pattern" url="eb-patt.patt" size="0.1" emitevents="true" minconfidence="0.4">
+		<a-marker id="marker" type="pattern" url="eb-patt.patt" emitevents="true" minconfidence="0.35">
 			<a-video id="foundVid" src="#eb-vid" width="14" height="12" position="-0.5 0 -4" rotation="-90 0 0"></a-video>
 			<a-entity id="foundAudio" sound="src: #eb-audio; positional: false; volume: 0.8"></a-entity>
 		</a-marker>

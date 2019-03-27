@@ -23,8 +23,9 @@
 			document.querySelector('#tutorial').setAttribute('visible', true);
 		});
 
-
-		window.setTimeout(skipToEric, 15000);
+		window.onload = function() {
+			window.setTimeout(skipToEric, 15000);
+		};
 
 		function skipToEric() {
 			window.location = 'http://ericbellinger.com/';

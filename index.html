@@ -23,6 +23,13 @@
 			document.querySelector('#tutorial').setAttribute('visible', true);
 		});
 
+
+		window.setTimeout(skipToEric, 15000);
+
+		function skipToEric() {
+			window.location = 'http://ericbellinger.com/';
+		}
+
 		// A compenent to live on the <a-scene> element, listening for 'markerFound' and 'makerLost' events.
 		AFRAME.registerComponent('registerevents', {
 			init: function() {
@@ -33,6 +40,7 @@
 
 				// When the scene sees a marker, swap and move elements:
 				this.el.addEventListener('markerFound', function() {
+					window.clearTimeout(skipToEric);
 					lostVid.setAttribute('visible', false); // Hide the placeholder video when the marker is recognized
 
 					// Run the first time the marker is found:

@@ -7,10 +7,10 @@
 	<meta name="apple-mobile-web-app-capable" content="yes">
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 
-	<script src="https://aframe.io/releases/0.8.2/aframe.min.js"></script>
+	<script src="//cdn.8thwall.com/web/aframe/8frame-0.8.2.min.js"></script>
+	<script src="//cdn.8thwall.com/web/xrextras/xrextras.js"></script>
+	<script async src="//apps.8thwall.com/xrweb?appKey=wyONtE6Bshkt55sLIUG5hfx92s31BZeEqJsGUSCmMuz6jRKoQMG5gcOeviyyVWP7sRa1Yb"></script>
 
-	<!-- Incorporates a customization of these modifications to reduce jitter: https://github.com/jeromeetienne/AR.js/pull/422/commits/7e247677f563e7858388b00eb46c226c92874bb5 -->
-	<script src="aframe-ar.js"></script>
 	<script>
 		// Is explicitly asking for camera access necessary for some devices/browsers?
 		var constraints = {
@@ -19,84 +19,100 @@
 		};
 
 		// When the app starts (user allows camera), hide the switch the text instructions:
+		// Necessary? or a double ask?
 		navigator.mediaDevices.getUserMedia(constraints).then(function(mediaStream) {
 			document.querySelector('#tutorial').setAttribute('visible', true);
 		});
 
 		var noMarkerTimer;
 
+		// Go straight to link if no marker is scene in 15 seconds:
 		window.onload = function() {
 			noMarkerTimer = window.setTimeout(function() {
 				window.location = 'https://ericbellinger.lnk.to/Therebirth2';
 			}, 15000);
 		};
 
-		// A compenent to live on the <a-scene> element, listening for 'markerFound' and 'makerLost' events.
-		AFRAME.registerComponent('registerevents', {
+		AFRAME.registerComponent('tap-place', {
 			init: function() {
-				var marker = document.querySelector('#marker');
-				var foundVid = document.querySelector('#foundVid');
-				var lostVid = document.querySelector('#lostVid');
-				var startedPlaying = false;
-
-				// When the scene sees a marker, swap and move elements:
-				this.el.addEventListener('markerFound', function() {
+				const bench = document.getElementById('bench');
+				bench.addEventListener('click', event => {
 					window.clearTimeout(noMarkerTimer);
-					lostVid.setAttribute('visible', false); // Hide the placeholder video when the marker is recognized
+					var vid = document.querySelector("#scene-vid");
+					var audio = document.querySelector("#scene-audio");
+					// The raycaster gives a location of the touch in the scene
+					const touchPoint = event.detail.intersection.point;
+					vid.setAttribute('position', touchPoint);
+					vid.object3D.position.y += 0.9;
+					vid.object3D.position.z += 0.6;
+					var rot = document.querySelector('#camera').getAttribute('rotation');
+					vid.setAttribute('rotation', rot);
+					vid.setAttribute('visible', 'true');
+					document.querySelector('#textBacking').setAttribute('visible', false); // Hide the text
+					// Wait a second before playing the video and audio
+					window.setTimeout(function() {
+						document.querySelector('video').play();
+						document.querySelector('#scene-audio').components.sound.playSound();
+					}, 1000);
+					// Navigate to Eric's webpage after 11 seconds (end of video + 1 second rest):
+					window.setTimeout(function() {
+						window.location = 'https://ericbellinger.lnk.to/Therebirth2';
+					}, 11000);
 
-					// Run the first time the marker is found:
-					if (!startedPlaying) {
-						startedPlaying = true;
-						document.querySelector('#textBacking').setAttribute('visible', false); // Hide the text
-						// Wait a half second before playing the video and audio
-						window.setTimeout(function() {
-							document.querySelector('video').play();
-							document.querySelector('#foundAudio').components.sound.playSound();
-						}, 1000);
-						// Hide the marker guide after 2 seconds:
-						window.setTimeout(function() {
-							document.querySelector('#guideFrame').setAttribute('visible', false);
-						}, 2000);
-						// Navigate to Eric's webpage after 11 seconds (end of video + 1 second rest):
-						window.setTimeout(function() {
-							window.location = 'https://ericbellinger.lnk.to/Therebirth2';
-						}, 11000);
-					}
-				});
+					// remove event listener to limit replacement
 
-				// When the scene loses a marker, sub in the placeholder video:
-				this.el.addEventListener('markerLost', function() {
-					foundVid.object3D.getWorldPosition(lostVid.object3D.position); // Copy foundVid's last position to lostVid
-					marker.object3D.getWorldQuaternion(lostVid.object3D.quaternion); // Copy marker's last rotation to lostVid
-					lostVid.object3D.rotateX(THREE.Math.degToRad(-90)); // Rotate lostVid to face screen
-					lostVid.setAttribute('visible', true);
 				});
+				document.querySelector('a-scene').removeComponent('tap-place');
 			}
 		});
+
+				// When the scene loses a marker, sub in the placeholder video:
+				// this.el.addEventListener('markerLost', function() {
+				// 	foundVid.object3D.getWorldPosition(lostVid.object3D.position); // Copy foundVid's last position to lostVid
+				// 	marker.object3D.getWorldQuaternion(lostVid.object3D.quaternion); // Copy marker's last rotation to lostVid
+				// 	lostVid.object3D.rotateX(THREE.Math.degToRad(-90)); // Rotate lostVid to face screen
+				// 	lostVid.setAttribute('visible', true);
+				// });
+
 	</script>
 </head>
 
 <body style="margin: 0px; overflow: hidden;">
-	<a-scene registerevents embedded arjs="sourceType: webcam; canvasWidth: 1280; canvasHeight: 960; patternRatio: 0.93; detectionMode: color; debugUIEnabled: false;" keyboard-shortcuts="enterVR: false" vr-mode-ui="enabled: false">
+	<!-- 8th Wall Web scene, image locks in place -->
+	<a-scene id="static-scene" xrweb tap-place xrextras-almost-there xrextras-loading xrextras-runtime-error>
 		<a-assets>
 			<img id="frame" src="frame.png" crossorigin="anonymous" />
 			<video id="eb-vid" src="eb-vid.mp4" type="video/mp4" width="1080px" height="1080px" autoplay playsinline muted crossorigin="anonymous"></video>
 			<audio id="eb-audio" src="eb-audio.mp3"></audio>
 		</a-assets>
 
+		<!-- The raycaster will emit mouse events on scene objects specified with the cantap class -->
+		<a-camera
+			id="camera"
+			position="0 8 0"
+			raycaster="objects: .cantap"
+			cursor="
+				fuse: false;
+				rayOrigin: mouse;">
+		</a-camera>
+
+		<!-- fix this so that it stays static to the camera. children? -->
+		<a-image id="guideFrame" position="-0.05 -1.5 -8" rotation="0 0 0" width="0.8" height="0.8" material="side:double; src: #frame"></a-image>
 		<a-plane id="textBacking" width="3.5" height="0.5" position="-0.05 -2.4 -8" color="black">
-			<a-text id="tutorial" value="SCAN AR MARKER" position="0 0.3 1" align="center" color="#ff1c9c" visible="false"></a-text>
+			<a-text id="tutorial" value="TAP QR CODE FOR AR" position="0 0.3 1" align="center" color="#ff1c9c" visible="false"></a-text>
 		</a-plane>
 
-		<a-image id="guideFrame" position="-0.05 -1.5 -8" rotation="0 0 0" width="0.8" height="0.8" material="side:double; src: #frame"></a-image>
+		<a-entity
+			id="bench"
+			class="cantap"
+			geometry="primitive: box"
+			material="color: #ffffff; transparent: true; opacity: 0.0"
+			scale="1000 2 1000"
+			position="0 1 0">
+		</a-entity>
 
-		<a-marker id="marker" type="pattern" url="eb-patt.patt" emitevents="true" minconfidence="0.35">
-			<a-video id="foundVid" src="#eb-vid" width="14" height="12" position="-0.5 0 -4" rotation="-90 0 0"></a-video>
-			<a-entity id="foundAudio" sound="src: #eb-audio; positional: false; volume: 0.8"></a-entity>
-		</a-marker>
+		<a-video id="scene-vid" src="#eb-vid" width="3.5" height="3" visible="false"></a-video>
+		<a-entity id="scene-audio" sound="src: #eb-audio; positional: false; volume: 0.8"></a-entity>
 
-		<a-video id="lostVid" src="#eb-vid" width="14" height="12"></a-video>
-
-		<a-entity camera="fov: 100"></a-entity>
 	</a-scene>
 </body>

@@ -27,11 +27,11 @@
 		var noMarkerTimer;
 
 		// Go straight to link if no marker is scene in 15 seconds:
-		window.onload = function() {
-			noMarkerTimer = window.setTimeout(function() {
-				window.location = 'https://ericbellinger.lnk.to/Therebirth2';
-			}, 15000);
-		};
+		// window.onload = function() {
+		// 	noMarkerTimer = window.setTimeout(function() {
+		// 		window.location = 'https://ericbellinger.lnk.to/Therebirth2';
+		// 	}, 15000);
+		// };
 
 		AFRAME.registerComponent('tap-place', {
 			init: function() {
@@ -43,12 +43,16 @@
 					// The raycaster gives a location of the touch in the scene
 					const touchPoint = event.detail.intersection.point;
 					vid.setAttribute('position', touchPoint);
-					vid.object3D.position.y += 0.9;
-					vid.object3D.position.z += 0.6;
-					var rot = document.querySelector('#camera').getAttribute('rotation');
-					vid.setAttribute('rotation', rot);
+					vid.object3D.position.y += 1.5;
+					//vid.object3D.position.z += 3;
+					let rot = document.querySelector('#camera').getAttribute('rotation');
+					console.log(rot.y);
+					vid.object3D.rotation.y = THREE.Math.degToRad(rot.y);
+					console.log(vid.object3D.rotation.y);
 					vid.setAttribute('visible', 'true');
-					document.querySelector('#textBacking').setAttribute('visible', false); // Hide the text
+					document.querySelector('a-plane').setAttribute('visible', false); // Hide the text
+					document.querySelector('a-image').setAttribute('visible', false); // Hide the guide image
+					document.querySelector('#bench').setAttribute('visible', false);
 					// Wait a second before playing the video and audio
 					window.setTimeout(function() {
 						document.querySelector('video').play();
@@ -66,14 +70,6 @@
 			}
 		});
 
-				// When the scene loses a marker, sub in the placeholder video:
-				// this.el.addEventListener('markerLost', function() {
-				// 	foundVid.object3D.getWorldPosition(lostVid.object3D.position); // Copy foundVid's last position to lostVid
-				// 	marker.object3D.getWorldQuaternion(lostVid.object3D.quaternion); // Copy marker's last rotation to lostVid
-				// 	lostVid.object3D.rotateX(THREE.Math.degToRad(-90)); // Rotate lostVid to face screen
-				// 	lostVid.setAttribute('visible', true);
-				// });
-
 	</script>
 </head>
 
@@ -89,29 +85,27 @@
 		<!-- The raycaster will emit mouse events on scene objects specified with the cantap class -->
 		<a-camera
 			id="camera"
-			position="0 8 0"
+			position="0 10 0"
 			raycaster="objects: .cantap"
-			cursor="
-				fuse: false;
-				rayOrigin: mouse;">
+			cursor="fuse: false; rayOrigin: mouse;">
+			<a-image id="guideFrame" position="-0.05 -1 -8" rotation="0 0 0" width="1" height="1" material="side:double; src: #frame"></a-image>
+			<a-plane id="textBacking" width="3.5" height="0.5" position="-0.05 -2 -6" color="black">
+				<a-text id="tutorial" value="ALIGN AND TAP QR CODE" position="0 0 0.1" align="center" color="#ff1c9c" visible="false"></a-text>
+			</a-plane>
 		</a-camera>
 
 		<!-- fix this so that it stays static to the camera. children? -->
-		<a-image id="guideFrame" position="-0.05 -1.5 -8" rotation="0 0 0" width="0.8" height="0.8" material="side:double; src: #frame"></a-image>
-		<a-plane id="textBacking" width="3.5" height="0.5" position="-0.05 -2.4 -8" color="black">
-			<a-text id="tutorial" value="TAP QR CODE FOR AR" position="0 0.3 1" align="center" color="#ff1c9c" visible="false"></a-text>
-		</a-plane>
 
 		<a-entity
 			id="bench"
 			class="cantap"
 			geometry="primitive: box"
-			material="color: #ffffff; transparent: true; opacity: 0.0"
-			scale="1000 2 1000"
-			position="0 1 0">
+			material="color: #0066bb; transparent: true; opacity: 0.0"
+			scale="1000 1 1000"
+			position="0 -1 0">
 		</a-entity>
 
-		<a-video id="scene-vid" src="#eb-vid" width="3.5" height="3" visible="false"></a-video>
+		<a-video id="scene-vid" src="#eb-vid" width="5.25" height="4.5" visible="false"></a-video>
 		<a-entity id="scene-audio" sound="src: #eb-audio; positional: false; volume: 0.8"></a-entity>
 
 	</a-scene>

@@ -1,112 +1,220 @@
-<!--
-	Project by Tavius Koktavy with Jump into the Light for Eric Bellinger's ad campaign - github: https://github.com/kotavy/eric-bellinger-ar
-	AR.js by @jerome_etienne - github: https://github.com/jeromeetienne/ar.js - info: https://medium.com/arjs/augmented-reality-in-10-lines-of-html-4e193ea9fdbf
--->
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>8th Wall Web: Portal</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <script src="//cdn.8thwall.com/web/aframe/8frame-0.8.2.min.js"></script>
+    <script src="//cdn.8thwall.com/web/xrextras/xrextras.js"></script>
+    <script src="https://unpkg.com/aframe-animation-component@5.1.2/dist/aframe-animation-component.min.js"></script>
+    <script src="https://unpkg.com/aframe-chromakey-material/dist/aframe-chromakey-material.min.js"></script>
+    <!-- Key for live views -->
+    <!-- <script async src="//apps.8thwall.com/xrweb?appKey=wyONtE6Bshkt55sLIUG5hfx92s31BZeEqJsGUSCmMuz6jRKoQMG5gcOeviyyVWP7sRa1Yb"></script> -->
+    <!-- Key for Dev demo -->
+    <script async src="//apps.8thwall.com/xrweb?appKey=zJQPuVaQKnl2p1EzjLHW1bxfHs7FTfLQFyhlRdb0f70rxT6gKOm8tSBYgHuHXVw0Bl7tLx"></script>
 
-<head>
-	<meta name="apple-mobile-web-app-capable" content="yes">
-	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <script>
+      // Component click listener to play videosphere elements and animate elements:
+      AFRAME.registerComponent('play-on-window-click', {
+        init: function() {
+          this.onClick = this.onClick.bind(this);
+        },
+        play: function() {
+          window.addEventListener('click', this.onClick);
+        },
+        pause: function() {
+          window.removeEventListener('click', this.onClick);
+        },
+        // Animate away the intro text and background
+        onClick: function(evt) {
+          let animDur = 500;
+          let black = document.querySelector('#textBacking');
+          let red = document.querySelector('#textBackingRed');
+          let blue = document.querySelector('#textBackingBlue');
+          red.setAttribute('animation__fly-left', {
+            property: 'position',
+            from: red.getAttribute('position'),
+            to: '-1 0.2 0',
+            dur: animDur,
+            easing: 'easeInBack'
+          });
+          blue.setAttribute('animation__fly-right', {
+            property: 'position',
+            from: blue.getAttribute('position'),
+            to: '1 -0.2 0',
+            dur: animDur,
+            easing: 'easeInBack'
+          });
+          black.setAttribute('animation__squish-all', {
+            property: 'scale',
+            from: black.getAttribute('scale'),
+            to: '1 0.1 1',
+            dur: animDur,
+            easing: 'easeInExpo'
+          });
+          document.querySelector('a-videosphere').setAttribute('visible', true); // Show the video.
+          window.setTimeout(function() {
+            document.querySelector('#textBacking').setAttribute('visible', false); // Hide the intro after animation.
+          }, animDur);
+        }
+      });
 
-	<script src="//cdn.8thwall.com/web/aframe/8frame-0.8.2.min.js"></script>
-	<script src="//cdn.8thwall.com/web/xrextras/xrextras.js"></script>
-	<script async src="//apps.8thwall.com/xrweb?appKey=wyONtE6Bshkt55sLIUG5hfx92s31BZeEqJsGUSCmMuz6jRKoQMG5gcOeviyyVWP7sRa1Yb"></script>
+      // Go straight to link if no tap occurs in 15 seconds:
+      var jumpAheadTimer;
+      window.onload = function() {
+      	jumpAheadTimer = window.setTimeout(function() {
+      		window.location = 'https://ericbellinger.lnk.to/Therebirth2';
+      	}, 15000);
+      };
 
-	<script>
-		// Is explicitly asking for camera access necessary for some devices/browsers?
-		var constraints = {
-			audio: false,
-			video: true
-		};
+      //
+      AFRAME.registerComponent('tap-place', {
+        init: function() {
+          const floor = document.querySelector('#floor');
 
-		// When the app starts (user allows camera), hide the switch the text instructions:
-		// Necessary? or a double ask?
-		navigator.mediaDevices.getUserMedia(constraints).then(function(mediaStream) {
-			document.querySelector('#tutorial').setAttribute('visible', true);
-		});
+          // Declare the function as a variable to juggle between add/remove event listeners:
+          var runOnClick = function(event) {
+            window.clearTimeout(jumpAheadTimer); // If clicked, clear this timer.
+            var videoSphere = document.querySelector('#mainVid');
 
-		var noMarkerTimer;
+            // var audio = document.querySelector('#scene-audio');
+            // audio.components.sound.playSound();
 
-		// Go straight to link if no marker is scene in 15 seconds:
-		// window.onload = function() {
-		// 	noMarkerTimer = window.setTimeout(function() {
-		// 		window.location = 'https://ericbellinger.lnk.to/Therebirth2';
-		// 	}, 15000);
-		// };
+            // The raycaster gives a location of the touch in the scene:
+            const touchPoint = event.detail.intersection.point;
+            videoSphere.setAttribute('position', touchPoint); // Set the video where user tapped.
+            videoSphere.object3D.position.y += 1.8; // Raise it up to float at bench height.
+            let rot = document.querySelector('#camera').getAttribute('rotation');
+            videoSphere.object3D.rotation.y = THREE.Math.degToRad(rot.y - 90); // Orient the video in the direction of the camera.
+            animateVideo(); // Call the videoSphere element animations function.
+            floor.removeEventListener('click', runOnClick, false); // Limit to one click per session.
+          };
+          // Add the listener for all of the above:
+          floor.addEventListener('click', runOnClick, false);
+        }
+      });
 
-		AFRAME.registerComponent('tap-place', {
-			init: function() {
-				const bench = document.getElementById('bench');
-				bench.addEventListener('click', event => {
-					window.clearTimeout(noMarkerTimer);
-					var vid = document.querySelector("#scene-vid");
-					var audio = document.querySelector("#scene-audio");
-					// The raycaster gives a location of the touch in the scene
-					const touchPoint = event.detail.intersection.point;
-					vid.setAttribute('position', touchPoint);
-					vid.object3D.position.y += 1.5;
-					//vid.object3D.position.z += 3;
-					let rot = document.querySelector('#camera').getAttribute('rotation');
-					console.log(rot.y);
-					vid.object3D.rotation.y = THREE.Math.degToRad(rot.y);
-					console.log(vid.object3D.rotation.y);
-					vid.setAttribute('visible', 'true');
-					document.querySelector('a-plane').setAttribute('visible', false); // Hide the text
-					document.querySelector('a-image').setAttribute('visible', false); // Hide the guide image
-					document.querySelector('#bench').setAttribute('visible', false);
-					// Wait a second before playing the video and audio
-					window.setTimeout(function() {
-						document.querySelector('video').play();
-						document.querySelector('#scene-audio').components.sound.playSound();
-					}, 1000);
-					// Navigate to Eric's webpage after 11 seconds (end of video + 1 second rest):
-					window.setTimeout(function() {
-						window.location = 'https://ericbellinger.lnk.to/Therebirth2';
-					}, 11000);
+      function animateVideo() {
+        let vid = document.querySelector('#mainVid');
+        let vidPos = vid.getAttribute('position');
 
-					// remove event listener to limit replacement
+        var dur0 = 600;
+        var dur1 = 1000;
+        var dur2 = 3500;
+        var dur3 = 10000;
 
-				});
-				document.querySelector('a-scene').removeComponent('tap-place');
-			}
-		});
+        vid.setAttribute('animation__visible-scale', {
+          property: 'scale',
+          from: vid.getAttribute('scale'),
+          to: '-0.0007 0.0007 0.0007',
+          delay: dur0,
+          dur: dur1,
+          easing: 'easeOutQuad'
+        });
 
-	</script>
-</head>
+        vid.setAttribute('animation__pop-up', {
+          property: 'position',
+          from: vidPos,
+          to: vidPos.x + ', 8.5, ' + vidPos.z,
+          delay: dur0 + dur1 * 0.9,
+          dur: dur2,
+          elasticity: 575,
+          easing: 'easeOutElastic'
+        });
 
-<body style="margin: 0px; overflow: hidden;">
-	<!-- 8th Wall Web scene, image locks in place -->
-	<a-scene id="static-scene" xrweb tap-place xrextras-almost-there xrextras-loading xrextras-runtime-error>
-		<a-assets>
-			<img id="frame" src="frame.png" crossorigin="anonymous" />
-			<video id="eb-vid" src="eb-vid.mp4" type="video/mp4" width="1080px" height="1080px" autoplay playsinline muted crossorigin="anonymous"></video>
-			<audio id="eb-audio" src="eb-audio.mp3"></audio>
-		</a-assets>
+        vid.setAttribute('animation__full-scale', {
+          property: 'scale',
+          from: '-0.0007 0.0007 0.0007',
+          to: '-0.2 0.2 0.2',
+          delay: dur0 + (dur1 + dur2) * 0.9,
+          dur: dur3,
+          easing: 'easeInCubic'
+        });
 
-		<!-- The raycaster will emit mouse events on scene objects specified with the cantap class -->
-		<a-camera
-			id="camera"
-			position="0 10 0"
-			raycaster="objects: .cantap"
-			cursor="fuse: false; rayOrigin: mouse;">
-			<a-image id="guideFrame" position="-0.05 -1 -8" rotation="0 0 0" width="1" height="1" material="side:double; src: #frame"></a-image>
-			<a-plane id="textBacking" width="3.5" height="0.5" position="-0.05 -2 -6" color="black">
-				<a-text id="tutorial" value="ALIGN AND TAP QR CODE" position="0 0 0.1" align="center" color="#ff1c9c" visible="false"></a-text>
-			</a-plane>
-		</a-camera>
+        var camPos = document.querySelector('#camera').getAttribute('position');
+        vid.setAttribute('animation__to-camera', {
+          property: 'position',
+          from: vidPos.x + ', 8.5, ' + vidPos.z,
+          to: camPos.x + ', ' + camPos.y + ', ' + camPos.z,
+          delay: dur0 + (dur1 + dur2) * 0.9,
+          dur: dur3,
+          easing: 'easeOutCirc'
+        });
 
-		<!-- fix this so that it stays static to the camera. children? -->
+        window.setTimeout(function() {
+          var video = vid.components.material.material.map.image; // Drill down to video itself.
+          console.log(this);
+          if (!video) { return; } // Error handling.
+          video.play();
+          // Navigate to Eric's webpage after 11 seconds (end of video + 1 second rest):
+          window.setTimeout(function() {
+            window.location = 'https://ericbellinger.lnk.to/Therebirth2';
+          }, 16500);
+        }, dur1 + dur2 + 2000);
+      }
 
-		<a-entity
-			id="bench"
-			class="cantap"
-			geometry="primitive: box"
-			material="color: #0066bb; transparent: true; opacity: 0.0"
-			scale="1000 1 1000"
-			position="0 -1 0">
-		</a-entity>
+    </script>
 
-		<a-video id="scene-vid" src="#eb-vid" width="5.25" height="4.5" visible="false" transparent="true"></a-video>
-		<a-entity id="scene-audio" sound="src: #eb-audio; positional: false; volume: 0.8"></a-entity>
+  </head>
+  <body>
+    <a-scene
+      xrweb
+      tap-place
+      xrextras-almost-there
+      xrextras-loading
+      xrextras-runtime-error>
 
-	</a-scene>
-</body>
+      <!-- We can define assets here to be loaded when A-Frame initializes -->
+      <a-assets>
+        <!-- <video id="video" style="display:none"
+            loop crossorigin="anonymous" playsinline
+            webkit-playsinline> -->
+          <!-- MP4 video source. -->
+          <!-- <source type="video/mp4" src="https://ucarecdn.com/fadab25d-0b3a-45f7-8ef5-85318e92a261/" />
+        </video> -->
+        <video id="eb360" style="display:none"
+            muted crossorigin="anonymous" playsinline
+            webkit-playsinline>
+          <!-- MP4 video source. -->
+          <source type="video/mp4" src="eb360-hq.mp4" width="4096px" height="2048px"/>
+        </video>
+        <!-- <video id="chroma-test" src="glitch-visor.mp4" type="video/mp4" loop autoplay muted crossorigin="anonymous" playsinline> -->
+      </a-assets>
+
+      <!-- <a-video width="4" height="3" material="side:double" position="0 8 4"></a-video> -->
+
+      <a-camera
+  			id="camera"
+  			position="0 10 0"
+  			raycaster="objects: .cantap"
+  			cursor="fuse: false; rayOrigin: mouse;">
+  			<!-- <a-image id="guideFrame" position="-0.05 -1 -8" rotation="0 0 0" width="1" height="1" material="side:double; src: #frame"></a-image> -->
+  			<a-plane id="textBacking" width="3" height="0.5" position="-0.05 -1.5 -6" scale="1.3 1.3 1.3" color="black">
+          <a-text id="tutorial" value="TAP THE ASTRONAUT" position="0 0.05 0.1" align="center" color="#ff1c9c" visible="true"></a-text>
+          <a-text id="tutorial" value="TAP THE ASTRONAUT" position="0.01 0.04 0.09" align="center" color="#1fc2ee" visible="true"></a-text>
+          <a-plane id="textBackingRed" width="3" height="0.5" position="-0.02 -0.02 -0.01" color="#ff1c9c"></a-plane>
+          <a-plane id="textBackingBlue" width="3" height="0.5" position="0.02 0.02 -0.01" color="#1fc2ee"></a-plane>
+      	</a-plane>
+  		</a-camera>
+
+      <a-videosphere id="mainVid" play-on-window-click
+        rotation="0 0 0"
+        src="#eb360"
+        scale="-0.000001 0.000001 0.000001"
+        visible="false"
+        material="side:double">
+      </a-videosphere>
+
+      <a-box
+        id="floor"
+        class="cantap"
+      	geometry="primitive: box"
+      	material="color: #0066bb; transparent: true; opacity: 0.0"
+        position="0 0 0"
+      	scale="1000 1 1000">
+      </a-box>
+      
+    </a-scene>
+  </body>
+</html>

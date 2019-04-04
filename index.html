@@ -77,10 +77,6 @@
           var runOnClick = function(event) {
             window.clearTimeout(jumpAheadTimer); // If clicked, clear this timer.
             var videoSphere = document.querySelector('#mainVid');
-
-            // var audio = document.querySelector('#scene-audio');
-            // audio.components.sound.playSound();
-
             // The raycaster gives a location of the touch in the scene:
             const touchPoint = event.detail.intersection.point;
             videoSphere.setAttribute('position', touchPoint); // Set the video where user tapped.
@@ -98,6 +94,10 @@
       function animateVideo() {
         let vid = document.querySelector('#mainVid');
         let vidPos = vid.getAttribute('position');
+        document.querySelector('#glitch-sphere').play();
+        window.setTimeout(function() {
+          document.querySelector('#glitch-visor').play();
+        }, 1500);
 
         var dur0 = 600;
         var dur1 = 1000;
@@ -147,49 +147,42 @@
           console.log(this);
           if (!video) { return; } // Error handling.
           video.play();
+          document.querySelector('#scene-audio').components.sound.playSound();
           // Navigate to Eric's webpage after 11 seconds (end of video + 1 second rest):
           window.setTimeout(function() {
             window.location = 'https://ericbellinger.lnk.to/Therebirth2';
-          }, 16500);
+          }, 13000);
         }, dur1 + dur2 + 2000);
       }
-
     </script>
-
   </head>
+
   <body>
+    <!-- Load A-Frame with 8th Wall Web -->
     <a-scene
       xrweb
       tap-place
       xrextras-almost-there
       xrextras-loading
       xrextras-runtime-error>
-
-      <!-- We can define assets here to be loaded when A-Frame initializes -->
+      <!-- A-Frame asset manager -->
       <a-assets>
-        <!-- <video id="video" style="display:none"
-            loop crossorigin="anonymous" playsinline
-            webkit-playsinline> -->
-          <!-- MP4 video source. -->
-          <!-- <source type="video/mp4" src="https://ucarecdn.com/fadab25d-0b3a-45f7-8ef5-85318e92a261/" />
-        </video> -->
-        <video id="eb360" style="display:none"
-            muted crossorigin="anonymous" playsinline
-            webkit-playsinline>
-          <!-- MP4 video source. -->
-          <source type="video/mp4" src="eb360-hq.mp4" width="4096px" height="2048px"/>
+        <!-- MP4 video source for videosphere -->
+        <video id="eb360" style="display:none" muted playsinline webkit-playsinline crossorigin="anonymous">
+          <source type="video/mp4" src="eb360-hq-faster.mp4" width="4096px" height="2048px"/>
         </video>
-        <!-- <video id="chroma-test" src="glitch-visor.mp4" type="video/mp4" loop autoplay muted crossorigin="anonymous" playsinline> -->
+        <audio id="eb-audio" src="eb-audio-slower.mp3"></audio>
+        <video id="glitch-visor" src="glitch-visor.mp4" type="video/mp4" position="0 2 -3" rotation="90 120 0" autoplay playsinline muted crossorigin="anonymous"></video>
+        <video id="glitch-sphere" src="glitch-sphere.mp4" type="video/mp4" position="0 2 -3" rotation="90 120 0" autoplay playsinline muted loop crossorigin="anonymous"></video>
+        <!-- Credit to glitch overlays from freestockfootagearchive.com -->
       </a-assets>
-
-      <!-- <a-video width="4" height="3" material="side:double" position="0 8 4"></a-video> -->
 
       <a-camera
   			id="camera"
   			position="0 10 0"
   			raycaster="objects: .cantap"
   			cursor="fuse: false; rayOrigin: mouse;">
-  			<!-- <a-image id="guideFrame" position="-0.05 -1 -8" rotation="0 0 0" width="1" height="1" material="side:double; src: #frame"></a-image> -->
+  			<!-- This plane serves as parent for the text and stylistic background planes: -->
   			<a-plane id="textBacking" width="3" height="0.5" position="-0.05 -1.5 -6" scale="1.3 1.3 1.3" color="black">
           <a-text id="tutorial" value="TAP THE ASTRONAUT" position="0 0.05 0.1" align="center" color="#ff1c9c" visible="true"></a-text>
           <a-text id="tutorial" value="TAP THE ASTRONAUT" position="0.01 0.04 0.09" align="center" color="#1fc2ee" visible="true"></a-text>
@@ -198,14 +191,20 @@
       	</a-plane>
   		</a-camera>
 
+      <!-- The videosphere itself. Default radius is 5000, so scale down -->
       <a-videosphere id="mainVid" play-on-window-click
         rotation="0 0 0"
         src="#eb360"
         scale="-0.000001 0.000001 0.000001"
         visible="false"
-        material="side:double">
+        material="side: double">
+        <a-sphere material="shader: chromakey; src: #glitch-visor; color: 0 0 0; side: double" scale="5500 5500 5500"></a-sphere>
+        <a-sphere material="shader: chromakey; src: #glitch-sphere; color: 0 0 0; side: double" scale="5600 5600 5600"></a-sphere>
       </a-videosphere>
 
+      <a-entity id="scene-audio" sound="src: #eb-audio; positional: false; volume: 0.8"></a-entity>
+
+      <!-- An entity for raycast detection on the groundplane -->
       <a-box
         id="floor"
         class="cantap"
@@ -214,7 +213,7 @@
         position="0 0 0"
       	scale="1000 1 1000">
       </a-box>
-      
+
     </a-scene>
   </body>
 </html>

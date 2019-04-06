@@ -11,13 +11,13 @@
     <script src="https://unpkg.com/aframe-chromakey-material/dist/aframe-chromakey-material.min.js"></script>
     <script src="//cdn.rawgit.com/donmccurdy/aframe-extras/v6.0.0/dist/aframe-extras.min.js"></script>
     <!-- Key for live views -->
-    <script async src="//apps.8thwall.com/xrweb?appKey=wyONtE6Bshkt55sLIUG5hfx92s31BZeEqJsGUSCmMuz6jRKoQMG5gcOeviyyVWP7sRa1Yb"></script>
+    <!-- <script async src="//apps.8thwall.com/xrweb?appKey=wyONtE6Bshkt55sLIUG5hfx92s31BZeEqJsGUSCmMuz6jRKoQMG5gcOeviyyVWP7sRa1Yb"></script> -->
     <!-- Key for Dev demo -->
-    <!-- <script async src="//apps.8thwall.com/xrweb?appKey=zJQPuVaQKnl2p1EzjLHW1bxfHs7FTfLQFyhlRdb0f70rxT6gKOm8tSBYgHuHXVw0Bl7tLx"></script> -->
+    <script async src="//apps.8thwall.com/xrweb?appKey=zJQPuVaQKnl2p1EzjLHW1bxfHs7FTfLQFyhlRdb0f70rxT6gKOm8tSBYgHuHXVw0Bl7tLx"></script>
 
     <script>
-      // Component click listener to play videosphere elements and animate elements:
-      AFRAME.registerComponent('play-on-window-click', {
+      // Component click listener to play astroHolder elements:
+      AFRAME.registerComponent('start-on-window-click', {
         init: function() {
           this.onClick = this.onClick.bind(this);
         },
@@ -29,6 +29,7 @@
         },
         // Animate away the intro text and background
         onClick: function(evt) {
+          // Animate the intro text:
           let animDur = 500;
           let black = document.querySelector('#textBacking');
           let red = document.querySelector('#textBackingRed');
@@ -54,9 +55,10 @@
             dur: animDur,
             easing: 'easeInExpo'
           });
-          document.querySelector('a-videosphere').setAttribute('visible', true); // Show the video.
+
+           // Hide the intro after animations finish:
           window.setTimeout(function() {
-            document.querySelector('#textBacking').setAttribute('visible', false); // Hide the intro after animation.
+            document.querySelector('#textBacking').setAttribute('visible', false);
           }, animDur);
         }
       });
@@ -69,6 +71,7 @@
       	}, 15000);
       };
 
+      // Runs once to start the scene, after the first tap:
       AFRAME.registerComponent('tap-place', {
         init: function() {
           const floor = document.querySelector('#floor');
@@ -76,14 +79,17 @@
           // Declare the function as a variable to juggle between add/remove event listeners:
           var runOnClick = function(event) {
             window.clearTimeout(jumpAheadTimer); // If clicked, clear this timer.
-            var videoSphere = document.querySelector('#mainVid');
+            //var astroHolder = document.querySelector('#astro-holder');
             // The raycaster gives a location of the touch in the scene:
             const touchPoint = event.detail.intersection.point;
-            videoSphere.setAttribute('position', touchPoint); // Set the video where user tapped.
-            videoSphere.object3D.position.y += 1.8; // Raise it up to float at bench height.
-            let rot = document.querySelector('#camera').getAttribute('rotation');
-            videoSphere.object3D.rotation.y = THREE.Math.degToRad(rot.y - 90); // Orient the video in the direction of the camera.
-            animateVideo(); // Call the videoSphere element animations function.
+            console.log(touchPoint.x);
+            //astroHolder.setAttribute('position', touchPoint); // Set the scene where user tapped.
+            // let camPos = document.querySelector('#camera').object3D.position;
+            document.querySelector('#eb-bboy-object').setAttribute('position', touchPoint); // Set the scene where user tapped.
+            document.querySelector('#eb-bboy-object').object3D.position.y += 1.8; // Raise it up to float at bench height.
+            document.querySelector('#eb-bboy-object').object3D.position.z += 3.5; // Raise it up to float at bench height.
+            // astroHolder.object3D.position.y += 1.8; // Raise it up to float at bench height.
+            animateScene(); // Call the astroHolder element animations function.
             floor.removeEventListener('click', runOnClick, false); // Limit to one click per session.
           };
           // Add the listener for all of the above:
@@ -91,6 +97,7 @@
         }
       });
 
+      // Continually face the astronaut towards the camera:
       AFRAME.registerComponent('face-user', {
         tick: function() {
           let camPos = document.querySelector('#camera').object3D.position;
@@ -100,74 +107,40 @@
         }
       });
 
-      function animateVideo() {
-        let vid = document.querySelector('#mainVid');
-        let vidPos = vid.getAttribute('position');
-        document.querySelector('#glitch-sphere').play();
-        window.setTimeout(function() {
-          document.querySelector('#glitch-visor').play();
-        }, 1500);
-
-        var dur0 = 600;
-        var dur1 = 1000;
-        var dur2 = 3500;
-        var dur3 = 10000;
-
-        vid.setAttribute('animation__visible-scale', {
+      // Start the scene:
+      function animateScene() {
+        //var glitchVisor = document.querySelector('#scene-glitch-visor');
+        //var glitchSphere = document.querySelector('#scene-glitch-sphere');
+        var astronaut = document.querySelector('#eb-bboy-object');
+        document.querySelector('#scene-audio').components.sound.playSound();
+        //glitchVisor.setAttribute('visible', true);
+        //document.querySelector('#glitch-visor').play();
+        //glitchSphere.setAttribute('visible', true);
+        //document.querySelector('#glitch-sphere').play();
+        astronaut.setAttribute('visible', true);
+        //console.log(document.querySelector('#astro-holder').getAttribute('position'));
+        console.log(document.querySelector('#eb-bboy-object').getAttribute('position'));
+        astronaut.setAttribute('animation__full-scale', {
           property: 'scale',
-          from: vid.getAttribute('scale'),
-          to: '-0.0007 0.0007 0.0007',
-          delay: dur0,
-          dur: dur1,
-          easing: 'easeOutQuad'
+          from: '0.0007 0.0007 0.0007',
+          to: '0.2 0.2 0.2',
+          dur: 2000,
+          easing: 'easeOutSine'
         });
-
-        vid.setAttribute('animation__pop-up', {
-          property: 'position',
-          from: vidPos,
-          to: vidPos.x + ', 8.5, ' + vidPos.z,
-          delay: dur0 + dur1 * 0.9,
-          dur: dur2,
-          elasticity: 575,
-          easing: 'easeOutElastic'
-        });
-
-        vid.setAttribute('animation__full-scale', {
-          property: 'scale',
-          from: '-0.0007 0.0007 0.0007',
-          to: '-0.2 0.2 0.2',
-          delay: dur0 + (dur1 + dur2) * 0.9,
-          dur: dur3,
-          easing: 'easeInCubic'
-        });
-
-        var camPos = document.querySelector('#camera').getAttribute('position');
-        vid.setAttribute('animation__to-camera', {
-          property: 'position',
-          from: vidPos.x + ', 8.5, ' + vidPos.z,
-          to: camPos.x + ', ' + camPos.y + ', ' + camPos.z,
-          delay: dur0 + (dur1 + dur2) * 0.9,
-          dur: dur3,
-          easing: 'easeOutCirc'
-        });
+        //glitchVisor.setAttribute('visible', false);
+        //glitchSphere.setAttribute('visible', false);
+        AFRAME.utils.entity.setComponentProperty(astronaut, 'animation-mixer', {clip: '*', timeScale: 0.85});
 
         window.setTimeout(function() {
-          var video = vid.components.material.material.map.image; // Drill down to video itself.
-          console.log(this);
-          if (!video) { return; } // Error handling.
-          video.play();
-          document.querySelector('#scene-audio').components.sound.playSound();
-          // Navigate to Eric's webpage after 11 seconds (end of video + 1 second rest):
-          window.setTimeout(function() {
-            // window.location = 'https://ericbellinger.lnk.to/Therebirth2';
-          }, 13000);
-        }, dur1 + dur2 + 2000);
+          window.location = 'https://ericbellinger.lnk.to/Therebirth2';
+        }, 11000);
       }
     </script>
   </head>
 
   <body>
     <!-- Load A-Frame with 8th Wall Web -->
+    <p>Loading...</p>
     <a-scene
       xrweb
       tap-place
@@ -177,21 +150,16 @@
       <!-- A-Frame asset manager -->
       <a-assets>
         <a-asset-item id="eb-bboy" src="eb-bboy-lighter.glb"></a-asset-item>
-        <!-- MP4 video source for videosphere -->
-        <!-- <video id="eb360" style="display:none" muted playsinline webkit-playsinline crossorigin="anonymous">
-          <source type="video/mp4" src="eb360-hq-faster.mp4" width="4096px" height="2048px"/>
-        </video> -->
-        <audio id="eb-audio" src="eb-audio-slower.mp3"></audio>
-        <!-- <video id="glitch-visor" src="glitch-visor.mp4" type="video/mp4" position="0 2 -3" rotation="90 120 0" autoplay playsinline muted crossorigin="anonymous"></video> -->
-        <!-- <video id="glitch-sphere" src="glitch-sphere.mp4" type="video/mp4" position="0 2 -3" rotation="90 120 0" autoplay playsinline muted loop crossorigin="anonymous"></video> -->
+        <audio id="eb-audio" src="eb-audio.mp3"></audio>
+        <!-- <video id="glitch-visor" src="glitch-visor.mp4" type="video/mp4" rotation="90 120 0" autoplay playsinline muted loop crossorigin="anonymous"></video> -->
+        <!-- <video id="glitch-sphere" src="glitch-sphere.mp4" type="video/mp4" rotation="90 120 0" autoplay playsinline muted loop crossorigin="anonymous"></video> -->
         <!-- Credit to glitch overlays from freestockfootagearchive.com -->
       </a-assets>
 
-      <a-entity id="eb-bboy-object" gltf-model="#eb-bboy" face-user animation-mixer="clip: *" position="0 3 -7" scale="0.2 0.2 0.2" visible="false"></a-entity>
-
       <a-camera
   			id="camera"
-  			position="0 10 0"
+  			position="0 7 0"
+        near="0.01"
   			raycaster="objects: .cantap"
   			cursor="fuse: false; rayOrigin: mouse;">
   			<!-- This plane serves as parent for the text and stylistic background planes: -->
@@ -201,20 +169,22 @@
           <a-plane id="textBackingRed" width="3" height="0.5" position="-0.02 -0.02 -0.01" color="#ff1c9c"></a-plane>
           <a-plane id="textBackingBlue" width="3" height="0.5" position="0.02 0.02 -0.01" color="#1fc2ee"></a-plane>
       	</a-plane>
+        <!-- <a-plane id="scene-glitch-visor" width="4" height="7" position="0 0 -5" material="shader: chromakey; src: #glitch-visor; color: 0 0 0; opacity: 0.75; side: double" visible="false"></a-plane> -->
+        <!-- <a-plane id="scene-glitch-sphere" width="6" height="7" position="-3 -2 -3.5" material="shader: chromakey; src: #glitch-sphere; color: 0 0 0; opacity: 0.75; side: double" visible="false"></a-plane> -->
   		</a-camera>
 
-      <!-- The videosphere itself. Default radius is 5000, so scale down -->
-      <!-- <a-videosphere id="mainVid" play-on-window-click
-        rotation="0 0 0"
-        src="#eb360"
-        scale="-0.000001 0.000001 0.000001"
-        visible="false"
-        material="side: double">
-        <a-sphere material="shader: chromakey; src: #glitch-visor; color: 0 0 0; side: double" scale="5500 5500 5500"></a-sphere>
-        <a-sphere material="shader: chromakey; src: #glitch-sphere; color: 0 0 0; side: double" scale="5600 5600 5600"></a-sphere>
-      </a-videosphere> -->
+      <a-entity light="type:directional; castShadow:true;" position="1 7 1"></a-entity>
 
-      <a-entity id="scene-audio" sound="src: #eb-audio; positional: false; volume: 0.8"></a-entity>
+      <!-- <a-entity id="astro-holder" start-on-window-click>
+        <a-sphere id="scene-glitch-visor" radius="5" material="shader: chromakey; src: #glitch-visor; color: 0 0 0; opacity: 0.75; side: double" visible="false"></a-sphere>
+        <a-sphere id="scene-glitch-sphere" radius="5" material="shader: chromakey; src: #glitch-sphere; color: 0 0 0; opacity: 0.75; side: double" visible="false"></a-sphere>
+      <a-entity> -->
+
+      <a-entity id="scene-audio" sound="src: #eb-audio; volume: 1"></a-entity>
+
+
+      <a-entity id="eb-bboy-object" gltf-model="#eb-bboy" start-on-window-click face-user position="0 0 0" scale="0.0007 0.0007 0.0007" shadow="receive: false" visible="false"></a-entity>
+
 
       <!-- An entity for raycast detection on the groundplane -->
       <a-box

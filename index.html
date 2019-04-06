@@ -11,9 +11,9 @@
     <script src="https://unpkg.com/aframe-chromakey-material/dist/aframe-chromakey-material.min.js"></script>
     <script src="//cdn.rawgit.com/donmccurdy/aframe-extras/v6.0.0/dist/aframe-extras.min.js"></script>
     <!-- Key for live views -->
-    <!-- <script async src="//apps.8thwall.com/xrweb?appKey=wyONtE6Bshkt55sLIUG5hfx92s31BZeEqJsGUSCmMuz6jRKoQMG5gcOeviyyVWP7sRa1Yb"></script> -->
+    <script async src="//apps.8thwall.com/xrweb?appKey=wyONtE6Bshkt55sLIUG5hfx92s31BZeEqJsGUSCmMuz6jRKoQMG5gcOeviyyVWP7sRa1Yb"></script>
     <!-- Key for Dev demo -->
-    <script async src="//apps.8thwall.com/xrweb?appKey=zJQPuVaQKnl2p1EzjLHW1bxfHs7FTfLQFyhlRdb0f70rxT6gKOm8tSBYgHuHXVw0Bl7tLx"></script>
+    <!-- <script async src="//apps.8thwall.com/xrweb?appKey=zJQPuVaQKnl2p1EzjLHW1bxfHs7FTfLQFyhlRdb0f70rxT6gKOm8tSBYgHuHXVw0Bl7tLx"></script> -->
 
     <script>
       // Component click listener to play astroHolder elements:
@@ -63,14 +63,6 @@
         }
       });
 
-      // Go straight to link if no tap occurs in 15 seconds:
-      var jumpAheadTimer;
-      window.onload = function() {
-      	jumpAheadTimer = window.setTimeout(function() {
-      		// window.location = 'https://ericbellinger.lnk.to/Therebirth2';
-      	}, 15000);
-      };
-
       // Runs once to start the scene, after the first tap:
       AFRAME.registerComponent('tap-place', {
         init: function() {
@@ -79,16 +71,12 @@
           // Declare the function as a variable to juggle between add/remove event listeners:
           var runOnClick = function(event) {
             window.clearTimeout(jumpAheadTimer); // If clicked, clear this timer.
-            //var astroHolder = document.querySelector('#astro-holder');
             // The raycaster gives a location of the touch in the scene:
             const touchPoint = event.detail.intersection.point;
             console.log(touchPoint.x);
-            //astroHolder.setAttribute('position', touchPoint); // Set the scene where user tapped.
-            // let camPos = document.querySelector('#camera').object3D.position;
             document.querySelector('#eb-bboy-object').setAttribute('position', touchPoint); // Set the scene where user tapped.
             document.querySelector('#eb-bboy-object').object3D.position.y += 1.8; // Raise it up to float at bench height.
             document.querySelector('#eb-bboy-object').object3D.position.z += 3.5; // Raise it up to float at bench height.
-            // astroHolder.object3D.position.y += 1.8; // Raise it up to float at bench height.
             animateScene(); // Call the astroHolder element animations function.
             floor.removeEventListener('click', runOnClick, false); // Limit to one click per session.
           };
@@ -109,16 +97,9 @@
 
       // Start the scene:
       function animateScene() {
-        //var glitchVisor = document.querySelector('#scene-glitch-visor');
-        //var glitchSphere = document.querySelector('#scene-glitch-sphere');
         var astronaut = document.querySelector('#eb-bboy-object');
         document.querySelector('#scene-audio').components.sound.playSound();
-        //glitchVisor.setAttribute('visible', true);
-        //document.querySelector('#glitch-visor').play();
-        //glitchSphere.setAttribute('visible', true);
-        //document.querySelector('#glitch-sphere').play();
         astronaut.setAttribute('visible', true);
-        //console.log(document.querySelector('#astro-holder').getAttribute('position'));
         console.log(document.querySelector('#eb-bboy-object').getAttribute('position'));
         astronaut.setAttribute('animation__full-scale', {
           property: 'scale',
@@ -127,8 +108,6 @@
           dur: 2000,
           easing: 'easeOutSine'
         });
-        //glitchVisor.setAttribute('visible', false);
-        //glitchSphere.setAttribute('visible', false);
         AFRAME.utils.entity.setComponentProperty(astronaut, 'animation-mixer', {clip: '*', timeScale: 0.85});
 
         window.setTimeout(function() {
@@ -151,9 +130,6 @@
       <a-assets>
         <a-asset-item id="eb-bboy" src="eb-bboy-lighter.glb"></a-asset-item>
         <audio id="eb-audio" src="eb-audio.mp3"></audio>
-        <!-- <video id="glitch-visor" src="glitch-visor.mp4" type="video/mp4" rotation="90 120 0" autoplay playsinline muted loop crossorigin="anonymous"></video> -->
-        <!-- <video id="glitch-sphere" src="glitch-sphere.mp4" type="video/mp4" rotation="90 120 0" autoplay playsinline muted loop crossorigin="anonymous"></video> -->
-        <!-- Credit to glitch overlays from freestockfootagearchive.com -->
       </a-assets>
 
       <a-camera
@@ -169,22 +145,13 @@
           <a-plane id="textBackingRed" width="3" height="0.5" position="-0.02 -0.02 -0.01" color="#ff1c9c"></a-plane>
           <a-plane id="textBackingBlue" width="3" height="0.5" position="0.02 0.02 -0.01" color="#1fc2ee"></a-plane>
       	</a-plane>
-        <!-- <a-plane id="scene-glitch-visor" width="4" height="7" position="0 0 -5" material="shader: chromakey; src: #glitch-visor; color: 0 0 0; opacity: 0.75; side: double" visible="false"></a-plane> -->
-        <!-- <a-plane id="scene-glitch-sphere" width="6" height="7" position="-3 -2 -3.5" material="shader: chromakey; src: #glitch-sphere; color: 0 0 0; opacity: 0.75; side: double" visible="false"></a-plane> -->
   		</a-camera>
 
       <a-entity light="type:directional; castShadow:true;" position="1 7 1"></a-entity>
 
-      <!-- <a-entity id="astro-holder" start-on-window-click>
-        <a-sphere id="scene-glitch-visor" radius="5" material="shader: chromakey; src: #glitch-visor; color: 0 0 0; opacity: 0.75; side: double" visible="false"></a-sphere>
-        <a-sphere id="scene-glitch-sphere" radius="5" material="shader: chromakey; src: #glitch-sphere; color: 0 0 0; opacity: 0.75; side: double" visible="false"></a-sphere>
-      <a-entity> -->
-
       <a-entity id="scene-audio" sound="src: #eb-audio; volume: 1"></a-entity>
 
-
       <a-entity id="eb-bboy-object" gltf-model="#eb-bboy" start-on-window-click face-user position="0 0 0" scale="0.0007 0.0007 0.0007" shadow="receive: false" visible="false"></a-entity>
-
 
       <!-- An entity for raycast detection on the groundplane -->
       <a-box

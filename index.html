@@ -9,6 +9,7 @@
     <script src="//cdn.8thwall.com/web/xrextras/xrextras.js"></script>
     <script src="https://unpkg.com/aframe-animation-component@5.1.2/dist/aframe-animation-component.min.js"></script>
     <script src="https://unpkg.com/aframe-chromakey-material/dist/aframe-chromakey-material.min.js"></script>
+    <script src="//cdn.rawgit.com/donmccurdy/aframe-extras/v6.0.0/dist/aframe-extras.min.js"></script>
     <!-- Key for live views -->
     <script async src="//apps.8thwall.com/xrweb?appKey=wyONtE6Bshkt55sLIUG5hfx92s31BZeEqJsGUSCmMuz6jRKoQMG5gcOeviyyVWP7sRa1Yb"></script>
     <!-- Key for Dev demo -->
@@ -64,11 +65,10 @@
       var jumpAheadTimer;
       window.onload = function() {
       	jumpAheadTimer = window.setTimeout(function() {
-      		window.location = 'https://ericbellinger.lnk.to/Therebirth2';
+      		// window.location = 'https://ericbellinger.lnk.to/Therebirth2';
       	}, 15000);
       };
 
-      //
       AFRAME.registerComponent('tap-place', {
         init: function() {
           const floor = document.querySelector('#floor');
@@ -88,6 +88,15 @@
           };
           // Add the listener for all of the above:
           floor.addEventListener('click', runOnClick, false);
+        }
+      });
+
+      AFRAME.registerComponent('face-user', {
+        tick: function() {
+          let camPos = document.querySelector('#camera').object3D.position;
+          let bboyPos = document.querySelector('#eb-bboy-object').object3D.position;
+          let lookVector = new THREE.Vector3(camPos.x, bboyPos.y, camPos.z); // Look at without y rotation.
+          this.el.object3D.lookAt(lookVector);
         }
       });
 
@@ -150,7 +159,7 @@
           document.querySelector('#scene-audio').components.sound.playSound();
           // Navigate to Eric's webpage after 11 seconds (end of video + 1 second rest):
           window.setTimeout(function() {
-            window.location = 'https://ericbellinger.lnk.to/Therebirth2';
+            // window.location = 'https://ericbellinger.lnk.to/Therebirth2';
           }, 13000);
         }, dur1 + dur2 + 2000);
       }
@@ -167,15 +176,18 @@
       xrextras-runtime-error>
       <!-- A-Frame asset manager -->
       <a-assets>
+        <a-asset-item id="eb-bboy" src="eb-bboy-lighter.glb"></a-asset-item>
         <!-- MP4 video source for videosphere -->
-        <video id="eb360" style="display:none" muted playsinline webkit-playsinline crossorigin="anonymous">
+        <!-- <video id="eb360" style="display:none" muted playsinline webkit-playsinline crossorigin="anonymous">
           <source type="video/mp4" src="eb360-hq-faster.mp4" width="4096px" height="2048px"/>
-        </video>
+        </video> -->
         <audio id="eb-audio" src="eb-audio-slower.mp3"></audio>
-        <video id="glitch-visor" src="glitch-visor.mp4" type="video/mp4" position="0 2 -3" rotation="90 120 0" autoplay playsinline muted crossorigin="anonymous"></video>
-        <video id="glitch-sphere" src="glitch-sphere.mp4" type="video/mp4" position="0 2 -3" rotation="90 120 0" autoplay playsinline muted loop crossorigin="anonymous"></video>
+        <!-- <video id="glitch-visor" src="glitch-visor.mp4" type="video/mp4" position="0 2 -3" rotation="90 120 0" autoplay playsinline muted crossorigin="anonymous"></video> -->
+        <!-- <video id="glitch-sphere" src="glitch-sphere.mp4" type="video/mp4" position="0 2 -3" rotation="90 120 0" autoplay playsinline muted loop crossorigin="anonymous"></video> -->
         <!-- Credit to glitch overlays from freestockfootagearchive.com -->
       </a-assets>
+
+      <a-entity id="eb-bboy-object" gltf-model="#eb-bboy" face-user animation-mixer="clip: *" position="0 3 -7" scale="0.2 0.2 0.2" visible="false"></a-entity>
 
       <a-camera
   			id="camera"
@@ -192,7 +204,7 @@
   		</a-camera>
 
       <!-- The videosphere itself. Default radius is 5000, so scale down -->
-      <a-videosphere id="mainVid" play-on-window-click
+      <!-- <a-videosphere id="mainVid" play-on-window-click
         rotation="0 0 0"
         src="#eb360"
         scale="-0.000001 0.000001 0.000001"
@@ -200,7 +212,7 @@
         material="side: double">
         <a-sphere material="shader: chromakey; src: #glitch-visor; color: 0 0 0; side: double" scale="5500 5500 5500"></a-sphere>
         <a-sphere material="shader: chromakey; src: #glitch-sphere; color: 0 0 0; side: double" scale="5600 5600 5600"></a-sphere>
-      </a-videosphere>
+      </a-videosphere> -->
 
       <a-entity id="scene-audio" sound="src: #eb-audio; positional: false; volume: 0.8"></a-entity>
 

@@ -70,7 +70,6 @@
 
           // Declare the function as a variable to juggle between add/remove event listeners:
           var runOnClick = function(event) {
-            window.clearTimeout(jumpAheadTimer); // If clicked, clear this timer.
             // The raycaster gives a location of the touch in the scene:
             const touchPoint = event.detail.intersection.point;
             console.log(touchPoint.x);

@@ -59,6 +59,8 @@
            // Hide the intro after animations finish:
           window.setTimeout(function() {
             document.querySelector('#textBacking').setAttribute('visible', false);
+            document.querySelector('#scene-audio').components.sound.playSound();
+
           }, animDur);
         }
       });
@@ -107,7 +109,7 @@
           dur: 2000,
           easing: 'easeOutSine'
         });
-        AFRAME.utils.entity.setComponentProperty(astronaut, 'animation-mixer', {clip: '*', timeScale: 0.85});
+        AFRAME.utils.entity.setComponentProperty(astronaut, 'animation-mixer', {clip: '*', timeScale: 0.9});
 
         window.setTimeout(function() {
           window.location = 'https://ericbellinger.lnk.to/Therebirth2';
@@ -127,7 +129,7 @@
       xrextras-runtime-error>
       <!-- A-Frame asset manager -->
       <a-assets>
-        <a-asset-item id="eb-bboy" src="eb-bboy-lighter.glb"></a-asset-item>
+        <a-asset-item id="eb-bboy" src="eb-bboy-final.glb"></a-asset-item>
         <audio id="eb-audio" src="eb-audio.mp3"></audio>
       </a-assets>
 
@@ -148,7 +150,7 @@
 
       <a-entity light="type:directional; castShadow:true;" position="1 7 1"></a-entity>
 
-      <a-entity id="scene-audio" sound="src: #eb-audio; volume: 1"></a-entity>
+      <a-entity id="scene-audio" sound="src: #eb-audio; volume: 1; on: click"></a-entity>
 
       <a-entity id="eb-bboy-object" gltf-model="#eb-bboy" start-on-window-click face-user position="0 0 0" scale="0.0007 0.0007 0.0007" shadow="receive: false" visible="false"></a-entity>
 

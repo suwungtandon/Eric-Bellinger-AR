@@ -132,7 +132,7 @@
       <!-- A-Frame asset manager -->
       <a-assets>
         <a-asset-item id="eb-bboy" src="eb-bboy-final.glb"></a-asset-item>
-        <a-asset-item id="eb-audio" preload="auto" src="eb-audio.mp3" response-type="arrayBuffer"></audio>
+        <a-asset-item id="eb-audio" preload="auto" src="eb-audio.mp3"></audio>
       </a-assets>
 
       <a-camera
@@ -150,7 +150,8 @@
       	</a-plane>
   		</a-camera>
 
-      <a-entity light="type:directional; castShadow:true;" position="1 7 1"></a-entity>
+      <a-light type="directional" castShadow="true" position="1 7 1"></a-entity>
+      <a-light type="ambient" intensity="0.5"></a-light>
 
       <a-sound id="scene-audio" src="#eb-audio" on="click"></a-sound>
 
